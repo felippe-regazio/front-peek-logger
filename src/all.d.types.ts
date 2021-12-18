@@ -15,11 +15,10 @@ type FrontPeekOptions = {
   save?: Function,
   dbName?: string,
   on?: CallbackList,
-  customLogLevels?: LogLevels, 
+  disabled?: boolean,
 }
 
 type LogData = {
-  tag?: string,
   date: string,
   level: number,
   payload: string,
