@@ -4,6 +4,7 @@ import utils from './utils'
 import {
   DEFAULT_LOG_LEVELS,
   DEFAULT_DATABASE_NAME,
+  DEFAULT_DB_MAX_RECORDS,
   DEFAULT_UNKNOWN_LOG_LEVEL
 } from './constants'
 
@@ -13,11 +14,15 @@ module.exports = class FrontPeekLogger {
   options: FrontPeekOptions;
   logLevels: LogLevels = { ...DEFAULT_LOG_LEVELS };
 
-  constructor(options: FrontPeekOptions = {}) {    
+  constructor(options: FrontPeekOptions = {}) {
+    const dbName = options.dbName || DEFAULT_DATABASE_NAME;
+    const maxRecords = options.maxRecords || DEFAULT_DB_MAX_RECORDS;
+
     try {
       this.options = options || {};
       this.registerLogLevels();
-      this.db = new FrontPeekDB({ dbName: options.dbName || DEFAULT_DATABASE_NAME });
+      
+      this.db = new FrontPeekDB({ dbName, maxRecords });
     } catch(error) {
       console.error(error);
       this.disabled = true;
@@ -32,26 +37,28 @@ module.exports = class FrontPeekLogger {
     }
   }
 
-  log(level: number | string, payload: string) {  
-    if (this.disabled || !payload) {
-      return false;
-    }
-
-    if (typeof payload !== 'string') {
-      console.warn('Front Peek log skipped: Tried to store a non string value:');
-      console.trace(payload);
-
-      return false;
-    }
-
-    const date = String(new Date());
-    const levelInfo = this.explainLogLevel(level);
-    const matter: LogData = { ...levelInfo, payload, date };
-    const callbackByLevel = this.on(levelInfo.severity.toLowerCase());
-    
-    this.save(matter);
-    callbackByLevel && callbackByLevel(matter);
-    return true;
+  log(level: number | string, payload: string) {
+    return new Promise((resolve, reject) => {
+      if (this.disabled || !payload) {
+        reject(false);
+      }
+  
+      if (typeof payload !== 'string') {
+        console.warn('Front Peek log skipped: Tried to store a non string value:');
+        console.trace(payload);
+  
+        reject(false);
+      }
+  
+      const date = String(new Date());
+      const levelInfo = this.explainLogLevel(level);
+      const matter: LogData = { ...levelInfo, payload, date, times: 1 };
+      const callbackByLevel = this.on(levelInfo.severity.toLowerCase());
+      
+      this.save(matter);
+      callbackByLevel && callbackByLevel(matter);
+      resolve(true);
+    })
   }
 
   explainLogLevel(levelKey: number | string): LogLevelExplained {
@@ -80,17 +87,20 @@ module.exports = class FrontPeekLogger {
   }
 
   save(matter: LogData) {
-    this.options.save ? this.options.save(matter) : this.db.save(matter);
-
+    this.options.save ? this.options.save(matter) : this.db.save(matter)
     const saveCallback = this.on('save');
     saveCallback && saveCallback(matter);
   }
 
-  getLogText(download: boolean = true, fileNamePrefix: string) {
-    utils.dumpDBAsText(this.db, download, fileNamePrefix);
+  clear() {
+    return this.db.clear();
   }
 
   getLogData() {
     return this.db.dump();
-  }  
+  }
+
+  getLogTxt(download: boolean = true, fileNamePrefix: string) {
+    return utils.dumpDBAsText(this.db, download, fileNamePrefix);
+  }
 }

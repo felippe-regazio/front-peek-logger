@@ -2,9 +2,8 @@ export default {
   dumpDBAsText(db: any, download: boolean = true, fileNamePrefix: string) {
     return new Promise((resolve, reject) => {
       db.dump().then(data => {
-        const txt = this.dbDumpedDataToText(data);
+        const txt = this.dbDataToText(data);
         const fileName = this.randomFileName(fileNamePrefix);
-
         download && this.downloadStrAsFile(fileName, txt);
         resolve(txt);
       })
@@ -12,9 +11,9 @@ export default {
     });  
   },
 
-  dbDumpedDataToText(data: any) {
+  dbDataToText(data: any) {
     return data && data
-      .map(item => `${item.severity.toUpperCase()} : ${item.date}\n\n${item.payload}`)
+      .map(item => `${item.severity.toUpperCase()} : ${item.date} x${item.times}\n\n${item.payload}`)
       .join(`\n${'-'.repeat(80)}\n`);
   },
 

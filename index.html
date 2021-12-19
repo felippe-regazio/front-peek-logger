@@ -12,11 +12,9 @@
  
   <script>
     const FPL = new FrontPeekLogger();
-    
-    FPL.log.warn('hello world');
-    FPL.getLogData().then(console.log)
+    FPL.db.clear();
   </script>
 
-  <button onclick="FPL.getLogText()">Dump Log</button>
+  <button onclick="FPL.getLogTxt().catch(console.warn)">Dump Log</button>
 </body>
 </html>

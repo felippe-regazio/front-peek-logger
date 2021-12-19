@@ -16,9 +16,12 @@ type FrontPeekOptions = {
   dbName?: string,
   on?: CallbackList,
   disabled?: boolean,
+  maxRecords?: number,
 }
 
 type LogData = {
+  key?: string,
+  times: number,
   date: string,
   level: number,
   payload: string,
@@ -26,5 +29,6 @@ type LogData = {
 }
 
 type DBOptions = {
-  dbName: string
+  dbName: string,
+  maxRecords: number,
 }
