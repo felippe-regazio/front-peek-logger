@@ -19,7 +19,7 @@ const FrontPeekDB = class {
   constructor (options: DBOptions) {
     this.options = options;
     this.store = createStore(options.dbName, options.dbName);
-    this.removeGarbage().catch(console.warn);
+    this.garbageCollector().catch(console.warn);
   }
 
   save(data: LogData) {
@@ -32,7 +32,7 @@ const FrontPeekDB = class {
       const id: string = uniqid();
 
       this.lastLog = {...data, key: id };
-      this.gc = setTimeout(() => this.removeGarbage(), DBGC_THRESHOLD_ON_SAVE);
+      this.gc = setTimeout(() => this.garbageCollector(), DBGC_THRESHOLD_ON_SAVE);
       
       set(id, data, this.store).catch(console.warn);
     }
@@ -49,7 +49,7 @@ const FrontPeekDB = class {
     return false;
   }
 
-  removeGarbage() {    
+  garbageCollector() {    
     return new Promise((resolve, reject) => {
       this.store('readwrite', idbStore => {
         const count = idbStore.count();
@@ -84,7 +84,7 @@ const FrontPeekDB = class {
 
   dump() {
     return new Promise(async (resolve, reject) => {
-      await this.removeGarbage().catch(reject);
+      await this.garbageCollector().catch(reject);
       const data = await values(this.store).catch(reject);
 
       resolve(data);
