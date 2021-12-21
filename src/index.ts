@@ -8,7 +8,7 @@ import {
   DEFAULT_UNKNOWN_LOG_LEVEL
 } from './constants'
 
-module.exports = class FrontPeekLogger {
+export default class FrontPeekLogger {
   db: any;
   disabled: boolean = false;
   options: FrontPeekOptions;
