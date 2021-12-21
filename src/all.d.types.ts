@@ -13,7 +13,6 @@ type LogLevelExplained = {
 
 type FrontPeekOptions = {
   save?: Function,
-  noDb?: string,
   dbName?: string,
   on?: CallbackList,
   disabled?: boolean,
