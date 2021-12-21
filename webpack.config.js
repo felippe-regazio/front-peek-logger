@@ -6,6 +6,8 @@ module.exports = {
     library: 'FrontPeekLogger',
     filename: 'index.js',
     libraryTarget: 'umd',
+    globalObject: 'this',
+    libraryExport: 'default',
     path: resolve(__dirname, 'dist')
   },
   devtool: 'source-map',
@@ -19,7 +21,7 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'awesome-typescript-loader'
+        use: 'ts-loader'
       }
     ]
   }
