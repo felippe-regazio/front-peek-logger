@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="dist/index.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 400px;
+    }
+    select, textarea {
+      width: 100%;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Front Peek Test Page</h1>
+ 
+  <script>
+    const FPL = new FrontPeekLogger({
+      dbName: 'fp-test-page',
+    });
+
+    function logFromForm() {
+      const form = this.document.forms.logform;
+      const logType = form.querySelector('#logType').value;
+      const logMessage = form.querySelector('#logMessage').value;
+
+      if (!logType || logType === '#') {
+        return alert('Please, chose a log type');
+      }
+
+      FPL.log(Number(logType), logMessage, () => form.reset());
+    }
+  </script>
+
+  <div class="container">
+    <form id="logform" action="/" onsubmit="return false;">
+      <label>Log Type</label><br/>
+      
+      <select id="logType" name="logType">
+        <option value="#" selected disabled>Select</option>
+        <option value="1">Error</option>
+        <option value="2">Warn</option>
+        <option value="3">Info</option>
+        <option value="4">Debug</option>
+        <option value="5">Unknown</option>
+      </select>
+      
+      <br/><br/>
+  
+      <label>Log message</label><br/>
+      <textarea id="logMessage" name="logMessage"></textarea>
+      
+      <br/><br/>
+      <button onclick="logFromForm()">Log Message</button>
+      <br/><br/>
+    </form>
+  
+    <hr>
+    <p>
+      This is a simple test page to verify Front Peek Logger capabitilies. Just chose a log level and type a message to be the payload.
+      The logs you decided to test will be stored on an indexedDB. To verify the logos, open your Browser Developer Tools (inspector) and
+      go to the "IndexedDB" inspection area. The logs stored here must be persistent.
+    </p>
+  
+    <button onclick="FPL.getLogTxt().catch(console.error)">Dump Log as TXT</button>
+    <button onclick="FPL.clear().catch(console.error)">Clear Database</button>
+  </div>
+</body>
+</html>
