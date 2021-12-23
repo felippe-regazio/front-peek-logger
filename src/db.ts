@@ -22,31 +22,43 @@ const FrontPeekDB = class {
     this.garbageCollector().catch(console.warn);
   }
 
-  save(data: LogData) {
-    if (this.gc) {
-      clearTimeout(this.gc);
-      this.gc = null;
-    }
+  save(data: LogData): Promise<string> {
+    return new Promise(async (resolve, reject) => {      
+      if (this.gc) {
+        clearTimeout(this.gc);
+        this.gc = null;
+      }
 
-    if (!this.dedup(data)) {
-      const id: string = uniqid();
+      const deduped = await this.dedup(data)
+        .catch(reject);
 
-      this.lastLog = {...data, key: id };
-      this.gc = setTimeout(() => this.garbageCollector(), DBGC_THRESHOLD_ON_SAVE);
-      
-      set(id, data, this.store).catch(console.warn);
-    }
+      if (deduped) {
+        resolve(deduped);
+      } else {
+        const id: string = uniqid();
+        this.lastLog = {...data, key: id };
+        
+        this.gc = setTimeout(() => { 
+          this.garbageCollector().catch(console.warn);
+        }, DBGC_THRESHOLD_ON_SAVE);
+        
+        await set(id, data, this.store).catch(reject);
+        resolve(id);
+      }
+    });
   }
 
-  dedup(data:LogData) {
-    if (this.lastLog && this.lastLog.payload === data.payload) {
-      const newData = { ...this.lastLog, times: this.lastLog.times++ };
-      update(this.lastLog.key, () => newData, this.store);
-
-      return true;
-    }
-
-    return false;
+  dedup(data:LogData): Promise<string|null> {
+    return new Promise(async (resolve, reject) => {
+      if (this.lastLog && this.lastLog.payload === data.payload) {
+        const newData = { ...this.lastLog, times: this.lastLog.times++ };
+        await update(this.lastLog.key, () => newData, this.store).catch(reject);
+  
+        resolve(this.lastLog.key);
+      } else {
+        resolve(null);
+      }
+    });
   }
 
   garbageCollector() {    

@@ -31,34 +31,46 @@ export default class FrontPeekLogger {
 
   registerLogLevels() {
     for(const [ level, severity ] of Object.entries(this.logLevels)) {
-      this.log[severity.toLowerCase()] = (message: string) => {
-        this.log(Number(level), message);
+      this.log[severity.toLowerCase()] = (message: string, cb?: Function) => {
+        this.log(Number(level), message, cb);
       }
     }
   }
 
-  log(level: number | string, payload: string) {
-    return new Promise((resolve, reject) => {
-      if (this.disabled || !payload) {
-        reject(false);
-      }
-  
-      if (typeof payload !== 'string') {
-        console.warn('Front Peek log skipped: Tried to store a non string value:');
-        console.trace(payload);
-  
-        reject(false);
-      }
-  
-      const date = String(new Date());
-      const levelInfo = this.explainLogLevel(level);
-      const matter: LogData = { ...levelInfo, payload, date, times: 1 };
-      const callbackByLevel = this.on(levelInfo.severity.toLowerCase());
-      
-      this.save(matter);
-      callbackByLevel && callbackByLevel(matter);
-      resolve(true);
-    })
+  log(level: number | string, payload: string, cb?: Function) {
+    if (this.disabled || !payload) {
+      return false;
+    }
+
+    if (typeof payload !== 'string') {
+      console.warn('Front Peek log skipped: Tried to store a non string value:');
+      console.trace(payload);
+
+      return false;
+    }
+
+    const date = String(new Date());
+    const levelInfo = this.explainLogLevel(level);
+    const matter: LogData = { ...levelInfo, payload, date, times: 1 };
+    
+    const callbacks = (error: any, data: LogData, key: string) => {
+      cb && cb(error, data, key);
+      this.callLogFnGlobalCallbacks(error, data, key);
+    };
+
+    this.db.save(matter)
+      .then((data: any) => callbacks(null, matter, data))
+      .catch((error: any) => callbacks(error, null, null));
+
+    return true;
+  }
+
+  callLogFnGlobalCallbacks(error: any, matter: LogData, key: string) {
+    const cbOnSave = this.on('save');
+    const cbByLevel = this.on(matter.severity.toLowerCase());
+
+    cbOnSave && cbOnSave(error, matter, key);
+    cbByLevel && cbByLevel(error, matter, key);
   }
 
   explainLogLevel(levelKey: number | string): LogLevelExplained {
@@ -84,12 +96,6 @@ export default class FrontPeekLogger {
 
   on(cbName: string) {
     return this.options && this.options.on && this.options.on[cbName];
-  }
-
-  save(matter: LogData) {
-    this.options.save ? this.options.save(matter) : this.db.save(matter)
-    const saveCallback = this.on('save');
-    saveCallback && saveCallback(matter);
   }
 
   clear() {
