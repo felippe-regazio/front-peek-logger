@@ -8,7 +8,7 @@ export default {
         resolve(txt);
       })
         .catch(reject);
-    });  
+    });
   },
 
   dbDataToText(data: any) {
