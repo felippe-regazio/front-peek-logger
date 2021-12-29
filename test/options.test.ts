@@ -73,7 +73,7 @@ describe('Test FPL instance independency', () => {
     FPL.db.garbageCollector().then(async () => {
       const data = await FPL.getLogData();
       expect(data.length).toEqual(2000);
-      expect(data[1999].payload).toEqual('Testing 2500');
+      expect(data[1999].payload).toEqual('Testing 2499');
 
       done();
     });

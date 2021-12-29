@@ -72,7 +72,7 @@ const FrontPeekDB = class {
         count.onsuccess = async () => {
           if (count.result >= this.maxRecords) {
             let delCount: number = count.result - this.maxRecords;
-            const idbIterator: IDBRequest = idbStore.openCursor(null, 'prev');
+            const idbIterator: IDBRequest = idbStore.openCursor(null, 'next');
 
             idbIterator.onsuccess = async (event: any) => {
               const cursor = event.target.result;
