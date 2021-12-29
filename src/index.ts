@@ -4,7 +4,6 @@ import utils from './utils'
 import {
   DEFAULT_LOG_LEVELS,
   DEFAULT_DATABASE_NAME,
-  DEFAULT_DB_MAX_RECORDS,
   DEFAULT_UNKNOWN_LOG_LEVEL
 } from './constants'
 
@@ -16,13 +15,15 @@ export default class FrontPeekLogger {
 
   constructor(options: FrontPeekOptions = {}) {
     const dbName = options.dbName || DEFAULT_DATABASE_NAME;
-    const maxRecords = options.maxRecords || DEFAULT_DB_MAX_RECORDS;
 
     try {
       this.options = options || {};
       this.registerLogLevels();
       
-      this.db = new FrontPeekDB({ dbName, maxRecords });
+      this.db = new FrontPeekDB({
+        dbName,
+        maxRecords: options.maxRecords
+      });
     } catch(error) {
       console.error(error);
       this.disabled = true;
@@ -30,11 +31,15 @@ export default class FrontPeekLogger {
   }
 
   registerLogLevels() {
+    const _log = this.log.bind(this);
+
     for(const [ level, severity ] of Object.entries(this.logLevels)) {
-      this.log[severity.toLowerCase()] = (message: string, cb?: Function) => {
-        this.log(Number(level), message, cb);
+      _log[severity.toLowerCase()] = (message: string, cb?: Function) => {
+        return _log(Number(level), message, cb);
       }
     }
+
+    this.log = _log;
   }
 
   log(level: number | string, payload: string, cb?: Function) {
@@ -59,8 +64,8 @@ export default class FrontPeekLogger {
     const callbacks = (error: any, key: string, log: LogData,) => {
       const cbData = { error, key, log };
 
-      cb && cb(cbData);
       this.instanceGlobalCallbacks(cbData);
+      cb && cb(cbData);
     };
 
     this.db.save(matter)

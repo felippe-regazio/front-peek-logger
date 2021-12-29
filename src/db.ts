@@ -15,34 +15,37 @@ const FrontPeekDB = class {
   store: UseStore;
   lastLog: LogData;
   options: DBOptions;
+  maxRecords: number;
 
   constructor (options: DBOptions) {
     this.options = options;
-    this.store = createStore(options.dbName, options.dbName);
+    this.maxRecords = options.maxRecords || DEFAULT_DB_MAX_RECORDS;
+    this.store = createStore(options.dbName, 'log');
     this.garbageCollector().catch(console.warn);
   }
 
   save(data: LogData): Promise<string> {
-    return new Promise(async (resolve, reject) => {      
-      if (this.gc) {
-        clearTimeout(this.gc);
-        this.gc = null;
-      }
-
+    return new Promise(async (resolve, reject) => {
       const deduped = await this.dedup(data)
         .catch(reject);
 
       if (deduped) {
         resolve(deduped);
       } else {
+        if (this.gc) {
+          clearTimeout(this.gc);
+          this.gc = null;
+        }
+  
         const id: string = uniqid();
         this.lastLog = {...data, key: id };
         
+        await set(id, data, this.store).catch(reject);
+
         this.gc = setTimeout(() => { 
           this.garbageCollector().catch(console.warn);
         }, DBGC_THRESHOLD_ON_SAVE);
-        
-        await set(id, data, this.store).catch(reject);
+                
         resolve(id);
       }
     });
@@ -67,8 +70,8 @@ const FrontPeekDB = class {
         const count = idbStore.count();
 
         count.onsuccess = async () => {
-          if (count.result >= DEFAULT_DB_MAX_RECORDS) {
-            let delCount: number = count.result - DEFAULT_DB_MAX_RECORDS;
+          if (count.result >= this.maxRecords) {
+            let delCount: number = count.result - this.maxRecords;
             const idbIterator: IDBRequest = idbStore.openCursor(null, 'prev');
 
             idbIterator.onsuccess = async (event: any) => {

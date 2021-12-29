@@ -28,6 +28,10 @@
       dbName: 'fp-test-page',
     });
 
+    for(let i=0; i<5000; i++) {
+      FPL.log.info(`Testing ${i}`);
+    }
+
     function logFromForm() {
       const form = this.document.forms.logform;
       const logType = form.querySelector('#logType').value;

@@ -1,12 +1,15 @@
-import 'fake-indexeddb/auto'
 import FrontPeekLogger from '../dist'
 import { DEFAULT_LOG_LEVELS } from '../src/constants'
 
 const FPL = new FrontPeekLogger();
 beforeEach(() => FPL.clear());
 
-describe('Test public methods and common usage', () => {
-  test('Check log method + different log levels | Check getLogData', done => {
+/**
+ * Tests the common usage of Front Peek Logger, check all
+ * methods with and simple usage, no options, no tuning.
+ */
+describe('Test public methods and their common usage', () => {
+  test('Check log() method variations and its results | Check getLogData()', done => {
     [ 'keys', 'values' ].forEach(entry => {
       Object[entry](DEFAULT_LOG_LEVELS).forEach((level: number|string) => {
         FPL.log(Number(level) || level, `Log using log level: "${level}"`);
@@ -38,7 +41,7 @@ describe('Test public methods and common usage', () => {
     }, 1000);
   });
 
-  test('Check log method callback', done => {
+  test('Check log() method callback', done => {
     FPL.log('info', 'Hello world', cbData => {
       expect(typeof cbData).toEqual('object');
       expect(cbData.error).toBeNull();
@@ -61,7 +64,7 @@ describe('Test public methods and common usage', () => {
     });
   });
 
-  test('Check Log levels shortcut methods', done => {
+  test('Check log.level() shortcut methods', done => {
     const callbacksFired = [];
 
     Object.values(DEFAULT_LOG_LEVELS).forEach((level: any) => {
@@ -105,7 +108,7 @@ describe('Test public methods and common usage', () => {
     }, 1000);
   });
 
-  test('Check downloaded log content', done => {
+  test('Check getLogTxt() method', done => {
     FPL.log('info', 'LOG TXT CONTENT TEST', async cbData => {
       const logText = await FPL.getLogTxt(false);
       expect(logText.includes(cbData.log.payload)).toBeTruthy();
