@@ -28,10 +28,6 @@
       dbName: 'fp-test-page',
     });
 
-    for(let i=0; i<5000; i++) {
-      FPL.log.info(`Testing ${i}`);
-    }
-
     function logFromForm() {
       const form = this.document.forms.logform;
       const logType = form.querySelector('#logType').value;
@@ -42,6 +38,12 @@
       }
 
       FPL.log(Number(logType), logMessage, () => form.reset());
+    }
+
+    function massiveLoadTest() {
+      for(let i=0; i<5000; i++) {
+        FPL.log.info(`Testing ${i}`);
+      }
     }
   </script>
 
@@ -75,6 +77,7 @@
       go to the "IndexedDB" inspection area. The logs stored here must be persistent.
     </p>
   
+    <button onclick="massiveLoadTest()">Add 5000 items on a for (load test)</button><br/><br/>
     <button onclick="FPL.getLogTxt().catch(console.error)">Dump Log as TXT</button>
     <button onclick="FPL.clear().catch(console.error)">Clear Database</button>
   </div>
