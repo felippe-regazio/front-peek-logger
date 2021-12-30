@@ -4,7 +4,7 @@ Front Peek is a Client-Only Persistent Logger, it helps you to store application
 
 # Considerations
 
-This library is in "pause state" since it cant deliver a good reliability and consistense on generated logs. This is due the current browser IndexedDB implementations issue (specially on chrome), which is very slow and still have some bugs. When doing tests stressing the IndexedDB with +5K writing transactions at once, some inconsistences may appear, which is intolarable on a log application because we couldnt trust on the log iteself. Since indexedDB is for while the only option for unlimited persistent storage on browsers, this library is paused till we have a better implementation or some lightweight alternative.
+This library is in "pause state" since it cant deliver a good reliability and consistense on generated logs. This is due the current browser IndexedDB implementations issue (specially on chrome), which is very slow and still have some bugs. When doing tests stressing the IndexedDB with +5K writing transactions at once, some inconsistences may appear, which is intolarable on a log application because we couldnt trust on the log iteself. Many effords and techiniques where applied in order to mitigate the IndexedDB performance problemas as: using the db storage as a fixed size LIFO, implementation an async garbage collecttor on the lib to keep the DB payloads small, used less queries as possible, etc. but none of them made stress tests perform better. Since indexedDB is for a while the only option for unlimited persistent storage on browsers, this library is paused till we have a better implementation or some lightweight alternative.
 
 Some further readings about:
 
