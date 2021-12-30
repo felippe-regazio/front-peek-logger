@@ -8,8 +8,8 @@ This library is in "pause state" since it cant deliver a good reliability and co
 
 Some further readings about:
 
-Why IndexedDB is slow and what to use instead
+Why IndexedDB is slow and what to use instead  
 https://rxdb.info/slow-indexeddb.html
 
-Chrome’s IndexedDB— from best in class to the slowest
+Chrome’s IndexedDB— from best in class to the slowest  
 https://dfahlander.medium.com/chromes-indexeddb-from-best-in-class-to-the-slowest-d34ed14624e0
